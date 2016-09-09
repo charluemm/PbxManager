@@ -2,3 +2,7 @@
 /config/app.php
 /tmp/*
 /logs/*
+
+# eclipse meta data
+.project
+.buildpath
