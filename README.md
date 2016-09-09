@@ -13,10 +13,13 @@ If Composer is installed globally, run
 composer install
 ```
 
-You should now be able to visit the path to where you installed the app and see
-the setup traffic lights.
+### enable PbxManager plugin
 
-## Configuration
+1. Clone [Repository] into ```plugins/``` folder (or copy ```plugins/PbXManager``` folder)
+2. enable ```PbxManager```plugin
+```php
+// config/bootstrap.php
+Plugin::load('PbxManager', ['bootstrap' => false, 'routes' => true, 'autoload' => true]);
+```
 
-Read and edit `config/app.php` and setup the 'Datasources' and any other
-configuration relevant for your application.
+[Repository]: https://github.com/charluemm/pbx-recording.git

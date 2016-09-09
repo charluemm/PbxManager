@@ -2,17 +2,13 @@
 
 ## Installation
 
-You can install this plugin into your CakePHP application using [composer](http://getcomposer.org).
-
-The recommended way to install composer packages is:
-
+1. Clone [Repository] into ```plugins/``` folder (or copy ```plugins/PbXManager``` folder)
+2. enable ```PbxManager``` plugin
+```php
+// config/bootstrap.php
+Plugin::load('PbxManager', ['bootstrap' => false, 'routes' => true, 'autoload' => true]);
 ```
-composer require your-name-here/PbxManager
-```
-
-## create SOAP Client Config
-
-Create new config-file to override default config.
+3. Create new config-file to override default config.
 
 
 ```php
@@ -32,3 +28,5 @@ $config = array(
 	)
 );
 ```
+
+[Repository]: https://github.com/charluemm/pbx-recording.git
