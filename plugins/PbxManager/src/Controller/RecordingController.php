@@ -1,10 +1,10 @@
 <?php 
-namespace App\Controller;
+namespace PbxManager\Controller;
+use PbxManager\Controller\AppController;
 
-use App\AppController;
 class RecordingController extends AppController {
 
-    public index()
+    public function index()
     {
     }
 }
