@@ -10,7 +10,7 @@ The recommended way to install composer packages is:
 composer require your-name-here/PbxManager
 ```
 
-## create SOAP Configuration
+## create SOAP Client Config
 
 Create new config-file to override default config.
 

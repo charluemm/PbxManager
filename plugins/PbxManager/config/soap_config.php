@@ -1,4 +1,5 @@
 <?php
+// Default soap client config
 $config = array(
 	"proxy" => array(
         "host" => null,
