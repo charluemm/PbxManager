@@ -3,6 +3,7 @@
 namespace PbxManager\Controller;
 
 use PbxManager\Controller\AppController;
+use Cake\Core\Configure;
 
 /**
  * @author Michael Müller <development@reu-network.de>
@@ -14,9 +15,23 @@ class RecordingController extends AppController
 	public function initialize()
 	{
 		parent::initialize();
+		// load app/config/soap_config.php
+		Configure::load("soap_config");
+		// get parameter from soap config
+		$url = Configure::read("soap.url");
+		$options = array(
+				'login' => Configure::read("soap.login"),
+				'password' => Configure::read("soap.password"),
+				'proxy_host' =>Configure::read("proxy.host"),
+				'proxy_port' => Configure::read("proxy.port"),
+				'proxy_login' => Configure::read("proxy.login"),
+				'proxy_password' => Configure::read("proxy.password"),
+				'trace' => 1,
+		);
+		
 		$this->loadComponent('PbxManager.Soap', array(
-				'url' => '',
-				'options' => array()
+				'url' => $url,
+				'options' => $options
 			)
 		);
 	}
