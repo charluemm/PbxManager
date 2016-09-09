@@ -224,4 +224,4 @@ if (Configure::read('debug')) {
 
 Plugin::load('Migrations');
 
-Plugin::load('PbxManager', ['bootstrap' => false, 'routes' => true]);
+Plugin::load('PbxManager', ['bootstrap' => false, 'routes' => true, 'autoload' => true]);
