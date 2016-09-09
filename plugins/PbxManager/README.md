@@ -12,9 +12,12 @@ composer require your-name-here/PbxManager
 
 ## create SOAP Configuration
 
+Create new config-file to override default config.
+
+
 ```php
-<?php
 // config/soap_config.php
+<?php
 $config = array(
 	"proxy" => array(
         "host" => null,
