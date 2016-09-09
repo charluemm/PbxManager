@@ -5,7 +5,7 @@ The framework source code can be found here: [cakephp/cakephp](https://github.co
 ## Installation
 
 1. Download [Composer](http://getcomposer.org/doc/00-intro.md) or update `composer self-update`.
-2. Clone Repository `git clone 
+2. Clone Repository `git clone https://github.com/charluemm/pbx-recording.git`
 3. Run `php composer.phar install`.
 
 If Composer is installed globally, run
