@@ -35,6 +35,11 @@ class SoapComponent extends Component {
 	 */
 	public function getUserInfo($userCN)
 	{
+		if(empty($this->soapClient))
+		{
+			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
+		}
+		
 		$result = $this->soapClient->getUserInfo($userCN);
 		
 		if(is_soap_fault($result))
@@ -49,6 +54,11 @@ class SoapComponent extends Component {
 	
 	public function enableRecording($userCN)
 	{
+		if(empty($this->soapClient))
+		{
+			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
+		}
+		
 		$result = "";
 		
 		return true;
@@ -56,6 +66,11 @@ class SoapComponent extends Component {
 	
 	public function disableRecording($userCN)
 	{
+		if(empty($this->soapClient))
+		{
+			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
+		}
+		
 		$result = "";
 		
 		return true;
