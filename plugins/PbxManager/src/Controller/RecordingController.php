@@ -15,8 +15,16 @@ class RecordingController extends AppController
 	public function initialize()
 	{
 		parent::initialize();
-		// load app/config/soap_config.php
-		Configure::load("soap_config");
+		// load soap_config.php
+		try 
+		{
+			Configure::load("soap_config");
+		}
+		catch (\Exception $ex)
+		{
+			Configure::load('PbxManager.soap_config');			
+		}
+		
 		// get parameter from soap config
 		$url = Configure::read("soap.url");
 		$options = array(
