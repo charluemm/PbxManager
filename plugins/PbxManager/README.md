@@ -3,6 +3,9 @@
 ## Installation
 
 1. Clone [Repository] into ```plugins/``` folder (or copy ```plugins/PbXManager``` folder)
+```bash
+clone https://github.com/charluemm/pbx-recording.git
+```
 2. enable ```PbxManager``` plugin
 ```php
 // config/bootstrap.php
