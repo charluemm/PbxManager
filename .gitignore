@@ -1,8 +1,12 @@
+/vendor/
 /vendor/*
 /config/app.php
+/tmp/
 /tmp/*
+/logs/
 /logs/*
 
 # eclipse meta data
 .project
 .buildpath
+
