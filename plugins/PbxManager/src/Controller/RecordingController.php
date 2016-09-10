@@ -37,6 +37,7 @@ class RecordingController extends AppController
 				'trace' => 1,
 		);
 		
+		// load soap component
 		$this->loadComponent('PbxManager.Soap', array(
 				'url' => $url,
 				'options' => $options
