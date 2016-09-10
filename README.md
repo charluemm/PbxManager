@@ -16,11 +16,12 @@ The framework source code can be found here: [cakephp/cakephp](https://github.co
 	```
 3. Run `php composer.phar install`.
 
-If Composer is installed globally, run
+	If Composer is installed globally, run
 
 	```bash
 	composer install
 	```
+
 
 ### enable PbxManager plugin
 
