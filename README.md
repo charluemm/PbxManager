@@ -25,7 +25,8 @@ If Composer is installed globally, run
 ### enable PbxManager plugin
 
 1. Clone [Repository] into ```plugins/``` folder (or copy ```plugins/PbXManager``` folder)
-2. enable ```PbxManager```plugin
+2. enable ```PbxManager``` plugin
+
 	```php
 	// config/bootstrap.php
 	Plugin::load('PbxManager', ['bootstrap' => false, 'routes' => true, 'autoload' => true]);
