@@ -17,6 +17,7 @@ class SoapComponent extends Component {
 	
 	public function initialize(array $config)
 	{	
+		parent::initialize($config);
 		if(array_key_exists('url', $config) && array_key_exists('options', $config))
 		{
 			$url = $config['url'];
