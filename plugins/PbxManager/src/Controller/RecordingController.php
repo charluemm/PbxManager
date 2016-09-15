@@ -34,7 +34,11 @@ class RecordingController extends AppController
 				'proxy_port' => Configure::read("proxy.port"),
 				'proxy_login' => Configure::read("proxy.login"),
 				'proxy_password' => Configure::read("proxy.password"),
-				'trace' => 1,
+				'trace' => 1, 
+				'exceptions' => 1,
+				'connection_timeout' => 10,
+				'stream_context' => stream_context_create(array('http' => array('protocol_version' => 1.0) ) )
+				
 		);
 		
 		// load soap component
