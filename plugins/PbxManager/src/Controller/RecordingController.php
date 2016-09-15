@@ -38,7 +38,6 @@ class RecordingController extends AppController
 				'exceptions' => 1,
 				'connection_timeout' => 10,
 				'stream_context' => stream_context_create(array('http' => array('protocol_version' => 1.0) ) )
-				
 		);
 		
 		// load soap component
@@ -49,10 +48,21 @@ class RecordingController extends AppController
 		);
 	}
 	
+	/**
+	 * get supervisor phone number
+	 * 
+	 * @return string superisor phone number
+	 */
+	private function getSupervisor()
+	{
+		// TODO: get phone number from current user object
+		return null;
+	}
+	
 	public function index()
 	{
 		if(!empty($this->request->data))
-			$this->set('userinfo', $this->Soap->getUserInfo($this->request->data['agentPhone']));
+			$this->set('userinfo', $this->Soap->findUser(null, null, $this->request->data['agentPhone']));
 	}
 	
 	public function enable($agent = null)

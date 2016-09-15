@@ -35,6 +35,36 @@ class SoapComponent extends Component {
 	}
 	
 	/**
+	 * 
+	 * @param string $cn
+	 * @param string $h323
+	 * @param string $e165
+	 * @return UserInfoArray
+	 */
+	public function findUser($cn = null, $h323 = null, $e165 = "16")
+	{
+		if(empty($this->soapClient))
+		{
+			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
+		}
+		
+		// search user
+		$list = $this->soapClient->FindUser(true, true, true, true, $cn, $h323, $e165, 1, false, false);
+		$show = array();
+		
+		foreach ($list as $user)
+		{
+			$cn = $user->cn;
+			$result = new \SimpleXMLElement("<show />");
+			$user = $result->addChild("user");
+			$user->addAttribute("cn", $cn);
+			$user->addAttribute("config", "true");
+			$show = $this->soapClient->Admin($result->asXML());
+		}
+		return $show;
+	}
+	
+	/**
 	 * get user info from soap server
 	 *
 	 * @param string $userCN the user identifier
@@ -48,9 +78,9 @@ class SoapComponent extends Component {
 		}
 		
 		$result = "";
-		//$result = $this->soapClient->__call('UserLocalNum', array('user' => null, 'num' => null));
+		$result = $this->soapClient->__call('UserLocalNum', array('user' => null, 'num' => null));
 		//$result = $this->soapClient->getUserInfo($userCN);
-		//var_dump($result);
+		var_dump($result);
 		
 		if(is_soap_fault($result))
 		{
