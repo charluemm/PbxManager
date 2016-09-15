@@ -13,6 +13,7 @@ use Cake\Controller\Component;
  */
 class SoapComponent extends Component {
 	
+	/** @var \SoapClient */
 	private $soapClient;
 	
 	public function initialize(array $config)
@@ -28,6 +29,11 @@ class SoapComponent extends Component {
 		}
 	}
 	
+	public function getSoapFunctions()
+	{
+		return $this->soapClient->__getFunctions();
+	}
+	
 	/**
 	 * get user info from soap server
 	 *
@@ -41,7 +47,10 @@ class SoapComponent extends Component {
 			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
 		}
 		
-		$result = $this->soapClient->getUserInfo($userCN);
+		$result = "";
+		//$result = $this->soapClient->__call('UserLocalNum', array('user' => null, 'num' => null));
+		//$result = $this->soapClient->getUserInfo($userCN);
+		//var_dump($result);
 		
 		if(is_soap_fault($result))
 		{
