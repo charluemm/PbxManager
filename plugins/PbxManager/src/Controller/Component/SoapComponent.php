@@ -29,11 +29,6 @@ class SoapComponent extends Component {
 		}
 	}
 	
-	public function getSoapFunctions()
-	{
-		return $this->soapClient->__getFunctions();
-	}
-	
 	/**
 	 * 
 	 * @param string $cn
