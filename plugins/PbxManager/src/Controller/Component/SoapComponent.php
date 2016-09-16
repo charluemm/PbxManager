@@ -36,7 +36,7 @@ class SoapComponent extends Component {
 	 * @param string $e165
 	 * @return UserInfoArray
 	 */
-	public function findUser($cn = null, $h323 = null, $e165 = "16")
+	public function findUserConfig($cn = null, $h323 = null, $e165 = null)
 	{
 		if(empty($this->soapClient))
 		{
@@ -53,7 +53,7 @@ class SoapComponent extends Component {
 			$result = new \SimpleXMLElement("<show />");
 			$user = $result->addChild("user");
 			$user->addAttribute("cn", $cn);
-			$user->addAttribute("config", "true");
+			//$user->addAttribute("config", "true");
 			$show = $this->soapClient->Admin($result->asXML());
 		}
 		return $show;
@@ -65,26 +65,29 @@ class SoapComponent extends Component {
 	 * @param string $userCN the user identifier
 	 * @return array $userinfo array of user parameters
 	 */
-	public function getUserInfo($userCN)
+	public function getUserInfo($number)
 	{
 		if(empty($this->soapClient))
 		{
 			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
 		}
 		
-		$result = "";
-		$result = $this->soapClient->__call('UserLocalNum', array('user' => null, 'num' => null));
-		//$result = $this->soapClient->getUserInfo($userCN);
-		var_dump($result);
+		$userConf = $this->findUserConfig(null, null, $number);
+		$userConf = new \SimpleXMLElement($userConf);
+		$recConf = $userConf->user->phone->rec;
+		$return = array();
 		
-		if(is_soap_fault($result))
-		{
-			return " Fehlercode: $result->faultcode | Fehlerstring: $result->faultstring";
-		}
-		else
-		{
-			return $result;
-		}
+		$return['username'] = (string)$userConf->user['cn'];
+		$return['number'] = (string)$recConf['e164'];
+
+		// set return attributes
+		$mode  = (string) $recConf['mode'];
+		$twoWayMedia = (string)$recConf['recv'];
+		$autoconnect = (string)$recConf['ac'];
+		
+		$return['recording'] = ($mode === "transparent" && $twoWayMedia === "1" && $autoconnect === "1");
+				
+		return $return;
 	}
 	
 	public function enableRecording($userCN)

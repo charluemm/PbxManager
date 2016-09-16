@@ -62,7 +62,7 @@ class RecordingController extends AppController
 	public function index()
 	{
 		if(!empty($this->request->data))
-			$this->set('userinfo', $this->Soap->findUser(null, null, $this->request->data['agentPhone']));
+			$this->set('userinfo', $this->Soap->getUserInfo($this->request->data['agentPhone']));
 	}
 	
 	public function enable($agent = null)
