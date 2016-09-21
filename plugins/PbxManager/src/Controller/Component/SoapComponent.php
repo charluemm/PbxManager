@@ -60,12 +60,12 @@ class SoapComponent extends Component {
 	}
 	
 	/**
-	 * get user info from soap server
+	 * get recording status from user
 	 *
 	 * @param string $userCN the user identifier
 	 * @return array $userinfo array of user parameters
 	 */
-	public function getUserInfo($number)
+	public function getRecordingStatus($number)
 	{
 		if(empty($this->soapClient))
 		{
@@ -77,6 +77,7 @@ class SoapComponent extends Component {
 		$recConf = $userConf->user->phone->rec;
 		$return = array();
 		
+		$return['user_number'] = $number;
 		$return['username'] = (string)$userConf->user['cn'];
 		$return['number'] = (string)$recConf['e164'];
 
@@ -90,13 +91,26 @@ class SoapComponent extends Component {
 		return $return;
 	}
 	
-	public function enableRecording($userCN)
+	public function enableRecording($number)
 	{
 		if(empty($this->soapClient))
 		{
 			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
 		}
 		
+		$showConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
+		
+		/** @var $recConf \SimpleXMLElement */
+		$recConf = $userConf->user->phone->rec;
+		$recConf['mode'] = "transparent";
+		$recConf['recv']= 0;
+		$recConf['ac'] = 0;
+		
+		var_dump($userConf->asXML());
+		//$result = $this->soapClient->Admin($userConf->asXML());
+		
+				var_dump($result);
+		die();
 		$result = "";
 		
 		return true;

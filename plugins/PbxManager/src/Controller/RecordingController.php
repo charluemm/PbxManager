@@ -30,7 +30,7 @@ class RecordingController extends AppController
 		$options = array(
 				'login' => Configure::read("soap.login"),
 				'password' => Configure::read("soap.password"),
-				'proxy_host' =>Configure::read("proxy.host"),
+				'proxy_host' => Configure::read("proxy.host"),
 				'proxy_port' => Configure::read("proxy.port"),
 				'proxy_login' => Configure::read("proxy.login"),
 				'proxy_password' => Configure::read("proxy.password"),
@@ -62,12 +62,12 @@ class RecordingController extends AppController
 	public function index()
 	{
 		if(!empty($this->request->data))
-			$this->set('userinfo', $this->Soap->getUserInfo($this->request->data['agentPhone']));
+			$this->set('userinfo', $this->Soap->getRecordingStatus($this->request->data['agentPhone']));
 	}
 	
-	public function enable($agent = null)
+	public function enable($number)
 	{
-		if($this->Soap->enableRecording($agent))
+		if($this->Soap->enableRecording($number))
 			$this->Flash->success("Mithören wurde aktiviert.");
 		else
 			$this->Flash->error("Es ist ein Fehler aufgetreten! Mithören konnte nicht aktiviert werden.");

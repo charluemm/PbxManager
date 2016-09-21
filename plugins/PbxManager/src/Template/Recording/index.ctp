@@ -21,9 +21,10 @@ if (isset($userinfo))
 	else
 		echo "Mithören ist <strong>nicht aktiviert</strong>.";
 	echo "<br/>";
+	   
+    echo $this->Html->link("aktivieren", array('controller' => 'recording', 'action' => 'enable', $userinfo['user_number']));
+    echo " | ";
+    echo $this->Html->link("deaktivieren", array('controller' => 'recording', 'action' => 'disable', $userinfo['user_number']));
 }
-echo $this->Html->link("aktivieren", array('controller' => 'recording', 'action' => 'enable'));
-echo " | ";
-echo $this->Html->link("deaktivieren", array('controller' => 'recording', 'action' => 'disable'));
 ?>
 </div>
