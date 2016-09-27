@@ -3,6 +3,7 @@
 namespace PbxManager\Controller\Component;
 
 use Cake\Controller\Component;
+use PbxManager\lib\Array2XML;
 
 /**
  * Class to handle SOAP calls
@@ -98,21 +99,12 @@ class SoapComponent extends Component {
 			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
 		}
 		
-		$showConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
+		$userConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
 		
-		/** @var $recConf \SimpleXMLElement */
-		$recConf = $userConf->user->phone->rec;
-		$recConf['mode'] = "transparent";
-		$recConf['recv']= 0;
-		$recConf['ac'] = 0;
-		
-		var_dump($userConf->asXML());
-		//$result = $this->soapClient->Admin($userConf->asXML());
-		
-				var_dump($result);
+		// set recording settings
+		$result = $this->setRecordingConf($userConf, true);
+		var_dump($result);
 		die();
-		$result = "";
-		
 		return true;
 	}
 	
@@ -123,8 +115,37 @@ class SoapComponent extends Component {
 			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
 		}
 		
-		$result = "";
+		$userConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
+		
+		// set recording settings
+		$result = $this->setRecordingConf($userConf, false);
 		
 		return true;
+	}
+	
+	private function setRecordingConf($xmlConf, $enable)
+	{
+		if($enable)
+		{
+			$mode = "transparent";
+			$recv = 1;
+			$ac = 1;
+		}
+		else
+		{
+			$mode = "off";
+			$recv = 0;
+			$ac = 0;
+		}
+		/** @var $recConf \SimpleXMLElement */
+		$recConf = $xmlConf->user->phone->rec;
+		$recConf['mode'] = $mode;
+		$recConf['recv']= $recv;
+		$recConf['ac'] = $ac;
+		
+		// convert to array
+		$arrayConf = json_decode(json_encode(simplexml_load_string($xmlConf->asXML())),true);
+		$xml = Array2XML::createXML("modify", $arrayConf);
+		return $xml;
 	}
 }
