@@ -5,8 +5,7 @@
 <?php 
 	echo $this->Form->create();
 	echo $this->Form->input('agentPhone', array('label' => false, 'placeholder' => 'Durchwahl Agent'));
-	echo $this->Form->submit('aktivieren');	
-	echo $this->Form->submit('deaktivieren');
+	echo $this->Form->submit('auswählen');	
 	echo $this->Form->end();
 ?>
 </div>

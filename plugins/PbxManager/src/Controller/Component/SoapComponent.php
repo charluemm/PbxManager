@@ -63,7 +63,7 @@ class SoapComponent extends Component {
 	/**
 	 * get recording status from user
 	 *
-	 * @param string $userCN the user identifier
+	 * @param string $number the agent phone
 	 * @return array $userinfo array of user parameters
 	 */
 	public function getRecordingStatus($number)
@@ -92,7 +92,15 @@ class SoapComponent extends Component {
 		return $return;
 	}
 	
-	public function enableRecording($number)
+	/**
+	 * enable pbx recording
+	 *
+	 * @param int $number agent phone
+	 * @param int $supervisor supervisor phone
+	 * @throws \Exception if soap client is not configured
+	 * @return boolean true, if sucessfull
+	 */
+	public function enableRecording($number, $supervisor)
 	{
 		if(empty($this->soapClient))
 		{
@@ -102,13 +110,25 @@ class SoapComponent extends Component {
 		$userConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
 		
 		// set recording settings
-		$result = $this->setRecordingConf($userConf, true);
-		var_dump($result);
-		die();
-		return true;
+		$recConf = $this->setRecordingConf($userConf, true, $supervisor);
+		$result = $this->soapClient->Admin($recConf);
+		
+		// check result
+		if(trim($result) == "<ok/>")
+			return true;
+		else
+			return false;
 	}
 	
-	public function disableRecording($userCN)
+	/**
+	 * disable pbx recording 
+	 * 
+	 * @param int $number agent phone
+	 * @param int $supervisor supervisor phone
+	 * @throws \Exception if soap client is not configured
+	 * @return boolean true, if sucessfull
+	 */
+	public function disableRecording($number, $supervisor)
 	{
 		if(empty($this->soapClient))
 		{
@@ -118,12 +138,24 @@ class SoapComponent extends Component {
 		$userConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
 		
 		// set recording settings
-		$result = $this->setRecordingConf($userConf, false);
+		$recConf = $this->setRecordingConf($userConf, false, $supervisor);
+		$result = $this->soapClient->Admin($recConf);
 		
-		return true;
+		// check result
+		if(trim($result) == "<ok/>")
+			return true;
+		else
+			return false;
 	}
 	
-	private function setRecordingConf($xmlConf, $enable)
+	/**
+	 * create recording conf xml
+	 *  
+	 * @param UserInfo $xmlConf agents userconfig
+	 * @param boolean $enable enable or disable
+	 * @param int $number supervisor phone number
+	 */
+	private function setRecordingConf($xmlConf, $enable, $number = null)
 	{
 		if($enable)
 		{
@@ -137,15 +169,17 @@ class SoapComponent extends Component {
 			$recv = 0;
 			$ac = 0;
 		}
+		
 		/** @var $recConf \SimpleXMLElement */
 		$recConf = $xmlConf->user->phone->rec;
 		$recConf['mode'] = $mode;
 		$recConf['recv']= $recv;
 		$recConf['ac'] = $ac;
+		$recConf['number'] = $number;
 		
 		// convert to array
 		$arrayConf = json_decode(json_encode(simplexml_load_string($xmlConf->asXML())),true);
 		$xml = Array2XML::createXML("modify", $arrayConf);
-		return $xml;
+		return $xml->saveXML();
 	}
 }

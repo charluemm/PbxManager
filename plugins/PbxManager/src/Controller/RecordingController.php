@@ -34,8 +34,8 @@ class RecordingController extends AppController
 				'proxy_port' => Configure::read("proxy.port"),
 				'proxy_login' => Configure::read("proxy.login"),
 				'proxy_password' => Configure::read("proxy.password"),
-				'trace' => 1, 
-				'exceptions' => 1,
+				//'trace' => 1, 
+				// 'exceptions' => 1,
 				'connection_timeout' => 10,
 				'stream_context' => stream_context_create(array('http' => array('protocol_version' => 1.0) ) )
 		);
@@ -55,28 +55,29 @@ class RecordingController extends AppController
 	 */
 	private function getSupervisor()
 	{
+		return 96;
 		// TODO: get phone number from current user object
 		return null;
 	}
 	
 	public function index()
 	{
-		if(!empty($this->request->data))
+		if(!empty($this->request->data) && array_key_exists("agentPhone", $this->request->data))
 			$this->set('userinfo', $this->Soap->getRecordingStatus($this->request->data['agentPhone']));
 	}
 	
-	public function enable($number)
+	public function enable($agentPhone)
 	{
-		if($this->Soap->enableRecording($number))
+		if($this->Soap->enableRecording($agentPhone, $this->getSupervisor()))
 			$this->Flash->success("Mithören wurde aktiviert.");
 		else
 			$this->Flash->error("Es ist ein Fehler aufgetreten! Mithören konnte nicht aktiviert werden.");
 		return $this->redirect(array('controller' => 'Recording', 'action' => 'index'));
 	}
 	
-	public function disable($agent = null)
+	public function disable($agentPhone)
 	{
-		if($this->Soap->disableRecording($agent))
+		if($this->Soap->disableRecording($agentPhone, $this->getSupervisor()))
 			$this->Flash->success("Mithören wurde deaktiviert.");
 		else
 			$this->Flash->error("Es ist ein Fehler aufgetreten! Mithören konnte nicht deaktiviert werden.");
