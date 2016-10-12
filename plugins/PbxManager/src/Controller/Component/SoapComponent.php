@@ -1,9 +1,7 @@
 <?php
 
-namespace PbxManager\Controller\Component;
-
-use Cake\Controller\Component;
-use PbxManager\lib\Array2XML;
+App::uses('Component','Controller');
+App::uses('Array2Xml', 'Lib');
 
 /**
  * Class to handle SOAP calls
@@ -17,17 +15,36 @@ class SoapComponent extends Component {
 	/** @var \SoapClient */
 	private $soapClient;
 	
-	public function initialize(array $config)
-	{	
-		parent::initialize($config);
-		if(array_key_exists('url', $config) && array_key_exists('options', $config))
-		{
-			$url = $config['url'];
-			$options = $config['options'];
-			
-			if(!empty($url))
-				$this->soapClient = new \SoapClient($url, $options);
-		}
+	public function __construct($config)
+	{		
+		Configure::load("soap_config");
+		$url = Configure::read("soap.wsdl");
+		
+		$options = array(
+				'login' => Configure::read("soap.login"),
+				'password' => Configure::read("soap.password"),
+				'proxy_host' => Configure::read("proxy.host"),
+				'proxy_port' => Configure::read("proxy.port"),
+				'proxy_login' => Configure::read("proxy.login"),
+				'proxy_password' => Configure::read("proxy.password"),
+				//'trace' => 1, 
+				//'exceptions' => 1,
+				'connection_timeout' => 10,
+				'request_fulluri' => true,
+				'stream_context' => stream_context_create(array(
+										'http' => array(
+											'protocol_version' => 1.0, 
+										),
+										'ssl' => array(
+											'verify_peer' => false,
+											'verify_peer_name' => false,
+											'allow_self_signed' => false
+										)
+				))
+		);
+		
+		if(!empty($url))
+			$this->soapClient = new \SoapClient($url, $options);
 	}
 	
 	/**
@@ -46,8 +63,8 @@ class SoapComponent extends Component {
 		
 		// search user
 		$list = $this->soapClient->FindUser(true, true, true, true, $cn, $h323, $e165, 1, false, false);
-		$show = array();
 		
+		$show = array();
 		foreach ($list as $user)
 		{
 			$cn = $user->cn;
@@ -73,11 +90,18 @@ class SoapComponent extends Component {
 			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
 		}
 		
-		$userConf = $this->findUserConfig(null, null, $number);
+		try
+		{
+			$userConf = $this->findUserConfig(null, null, $number);
+		}
+		catch(Exception $ex)
+		{
+			throw new \Exception($ex->getMessage());
+		}
+		
 		$userConf = new \SimpleXMLElement($userConf);
 		$recConf = $userConf->user->phone->rec;
 		$return = array();
-		
 		$return['user_number'] = $number;
 		$return['username'] = (string)$userConf->user['cn'];
 		$return['number'] = (string)$recConf['e164'];
@@ -85,9 +109,10 @@ class SoapComponent extends Component {
 		// set return attributes
 		$mode  = (string) $recConf['mode'];
 		$twoWayMedia = (string)$recConf['recv'];
+		$funcKeyControl = (string)$recConf['fkey'];
 		$autoconnect = (string)$recConf['ac'];
 		
-		$return['recording'] = ($mode === "transparent" && $twoWayMedia === "1" && $autoconnect === "1");
+		$return['recording'] = ($mode === "transparent" && $twoWayMedia === "0" && $autoconnect === "1" && $funcKeyControl === "1");
 				
 		return $return;
 	}
@@ -98,7 +123,7 @@ class SoapComponent extends Component {
 	 * @param int $number agent phone
 	 * @param int $supervisor supervisor phone
 	 * @throws \Exception if soap client is not configured
-	 * @return boolean true, if sucessfull
+	 * @return boolean true, if successfully
 	 */
 	public function enableRecording($number, $supervisor)
 	{
@@ -107,8 +132,15 @@ class SoapComponent extends Component {
 			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
 		}
 		
-		$userConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
-		
+		try
+		{
+			$userConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
+		}
+		catch(Exception $ex)
+		{
+			throw new \Exception($ex->getMessage());
+		}
+				
 		// set recording settings
 		$recConf = $this->setRecordingConf($userConf, true, $supervisor);
 		$result = $this->soapClient->Admin($recConf);
@@ -117,7 +149,9 @@ class SoapComponent extends Component {
 		if(trim($result) == "<ok/>")
 			return true;
 		else
+		{
 			return false;
+		}
 	}
 	
 	/**
@@ -135,10 +169,17 @@ class SoapComponent extends Component {
 			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
 		}
 		
-		$userConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
+		try
+		{
+			$userConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
+		}
+		catch(Exception $ex)
+		{
+			throw new \Exception($ex->getMessage());
+		}
 		
 		// set recording settings
-		$recConf = $this->setRecordingConf($userConf, false, $supervisor);
+		$recConf = $this->setRecordingConf($userConf, false);
 		$result = $this->soapClient->Admin($recConf);
 		
 		// check result
@@ -157,29 +198,40 @@ class SoapComponent extends Component {
 	 */
 	private function setRecordingConf($xmlConf, $enable, $number = null)
 	{
-		if($enable)
+		// check if rec attribute exists
+		if(!isset($xmlConf->user->phone->rec))
 		{
-			$mode = "transparent";
-			$recv = 1;
-			$ac = 1;
+			$cn = $xmlConf->user['cn'];
+			return $this->addRecordingConf($cn, $number);
 		}
-		else
-		{
-			$mode = "off";
-			$recv = 0;
-			$ac = 0;
-		}
-		
+				
 		/** @var $recConf \SimpleXMLElement */
 		$recConf = $xmlConf->user->phone->rec;
-		$recConf['mode'] = $mode;
-		$recConf['recv']= $recv;
-		$recConf['ac'] = $ac;
-		$recConf['number'] = $number;
+		$recConf['mode'] = $enable ? "transparent" : "off";
+		$recConf['recv'] = 0;
+		$recConf['fkey'] = 1;
+		$recConf['ac'] = $enable ? 1 : 0;
+		$recConf['e164'] = $enable ? $number : null;
 		
 		// convert to array
 		$arrayConf = json_decode(json_encode(simplexml_load_string($xmlConf->asXML())),true);
-		$xml = Array2XML::createXML("modify", $arrayConf);
+		$xml = Array2Xml::createXML("modify", $arrayConf);
 		return $xml->saveXML();
+	}
+	
+	private function addRecordingConf($cn, $number)
+	{
+		$result = new \SimpleXMLElement("<add-attrib />");
+		$user = $result->addChild("user");
+		$user->addAttribute("cn", $cn);
+		$phone = $user->addChild("phone");
+		$rec = $phone->addChild("rec");
+		$rec->addAttribute("mode", "transparent");
+		$rec->addAttribute("recv", 0);
+		$rec->addAttribute("fkey", 1);
+		$rec->addAttribute("ac", 1);
+		$rec->addAttribute("e164", $number);
+	
+		return $result->asXML();
 	}
 }

@@ -1,86 +1,67 @@
 <?php
-
-namespace PbxManager\Controller;
-
-use PbxManager\Controller\AppController;
-use Cake\Core\Configure;
-
 /**
  * @author Michael Müller <development@reu-network.de>
- * @author David Howon <howon.david@gmail.com>
- *
- */
+* @author David Howon <howon.david@gmail.com>
+*/
 class RecordingController extends AppController
 {
-	public function initialize()
-	{
-		parent::initialize();
-		// load soap_config.php
-		try 
-		{
-			Configure::load("soap_config");
-		}
-		catch (\Exception $ex)
-		{
-			Configure::load('PbxManager.soap_config');			
-		}
-		
-		// get parameter from soap config
-		$url = Configure::read("soap.url");
-		$options = array(
-				'login' => Configure::read("soap.login"),
-				'password' => Configure::read("soap.password"),
-				'proxy_host' => Configure::read("proxy.host"),
-				'proxy_port' => Configure::read("proxy.port"),
-				'proxy_login' => Configure::read("proxy.login"),
-				'proxy_password' => Configure::read("proxy.password"),
-				//'trace' => 1, 
-				// 'exceptions' => 1,
-				'connection_timeout' => 10,
-				'stream_context' => stream_context_create(array('http' => array('protocol_version' => 1.0) ) )
-		);
-		
-		// load soap component
-		$this->loadComponent('PbxManager.Soap', array(
-				'url' => $url,
-				'options' => $options
-			)
-		);
-	}
-	
+	public $components = array("Soap");
+
 	/**
-	 * get supervisor phone number
-	 * 
-	 * @return string superisor phone number
+	 * creates new log entry
 	 */
-	private function getSupervisor()
+	private function logWrite($message)
 	{
-		return 96;
-		// TODO: get phone number from current user object
-		return null;
+		// TODO: Methodenkörper füllen
 	}
-	
+
 	public function index()
 	{
-		if(!empty($this->request->data) && array_key_exists("agentPhone", $this->request->data))
-			$this->set('userinfo', $this->Soap->getRecordingStatus($this->request->data['agentPhone']));
-	}
-	
-	public function enable($agentPhone)
-	{
-		if($this->Soap->enableRecording($agentPhone, $this->getSupervisor()))
-			$this->Flash->success("Mithören wurde aktiviert.");
-		else
-			$this->Flash->error("Es ist ein Fehler aufgetreten! Mithören konnte nicht aktiviert werden.");
-		return $this->redirect(array('controller' => 'Recording', 'action' => 'index'));
-	}
-	
-	public function disable($agentPhone)
-	{
-		if($this->Soap->disableRecording($agentPhone, $this->getSupervisor()))
-			$this->Flash->success("Mithören wurde deaktiviert.");
-		else
-			$this->Flash->error("Es ist ein Fehler aufgetreten! Mithören konnte nicht deaktiviert werden.");
-		return $this->redirect(array('controller' => 'Recording', 'action' => 'index'));
+		if(!empty($this->request->data))
+		{
+			$supervisor = trim($this->request->data['select']['supervisorPhone']);
+			$agent = trim($this->request->data['select']['agentPhone']);
+				
+			// check attributes
+			if((empty($supervisor) || empty($agent)) || (!is_numeric($supervisor) || !is_numeric($agent)))
+			{
+				$this->Session->setFlash(__('Es ist ein Fehler aufgetreten! Bitte prüfen Sie Ihre Eingaben.'), 'default', array(), 'bad');
+				return;
+			}
+				
+			// check which submit button was clicked
+			// enable
+			if(isset($this->request->data['enable']))
+			{
+				$result = $this->Soap->enableRecording($agent, $supervisor);
+				if($result)
+				{
+					$this->logWrite("Recording wurde auf Agent $agent für Supervisor $supervisor aktiviert");
+					$this->Session->setFlash(__('Mithören wurde aktiviert.'), 'default', array(), 'good');
+				}
+				else
+				{
+					$this->Session->setFlash(__('Es ist ein Fehler aufgetreten! Mithören konnte nicht aktiviert werden.'), 'default', array(), 'bad');
+				}
+			}
+			// disable
+			elseif(isset($this->request->data['disable']))
+			{
+				$result = $this->Soap->disableRecording($agent, $supervisor);
+				if($result)
+				{
+					$this->logWrite("Recording wurde auf Agent $agent für Supervisor $supervisor deaktiviert");
+					$this->Session->setFlash(__('Mithören wurde deaktiviert.'), 'default', array(), 'good');
+				}
+				else
+				{
+					$this->Session->setFlash(__('Es ist ein Fehler aufgetreten! Mithören konnte nicht deaktiviert werden.'), 'default', array(), 'bad');
+				}
+			}
+				
+			// user info
+			$userinfo = $this->Soap->getRecordingStatus($agent);
+			$this->set('userinfo', $userinfo);
+		}
 	}
 }

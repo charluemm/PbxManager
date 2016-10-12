@@ -1,29 +1,37 @@
-<h1>Recording-/Mithörfunktion</h1>
+<h2>Recording-/Mithörfunktion</h2>
 
-<div style="width: 48%; float:left; padding-left: 1%">
-<h3>Agent auswählen</h3>
-<?php 
-	echo $this->Form->create();
-	echo $this->Form->input('agentPhone', array('label' => false, 'placeholder' => 'Durchwahl Agent'));
-	echo $this->Form->submit('auswählen');	
-	echo $this->Form->end();
-?>
-</div>
+<div class="box">
+    <div class="ym-grid">
+        <div class="ym-g50 ym-gl">
+        <?php 
+            echo $this->Form->create('select');
+            echo $this->Form->input('supervisorPhone', array('label' => 'Durchwahl Supervisor', 'placeholder' => 'Durchwahl Supervisor'));
+            echo $this->Form->input('agentPhone', array('label' => 'Durchwahl Agent', 'placeholder' => 'Durchwahl Agent'));
+            echo $this->Form->submit('Agent Infos anzeigen', array('div' => false, 'name' => 'show', 'class' => 'right1'));
+            echo $this->Form->submit('aktivieren', array('div' => false, 'name' => 'enable', 'class' => 'right1')); 
+            echo $this->Form->submit('deaktivieren', array('div' => false, 'name' => 'disable'));
+            echo $this->Form->end();
+        ?>
+        </div>
 
-<div style="width: 49%; float:left; padding-left: 2%">
-<?php 
-if (isset($userinfo))
-{ 
-	echo "<h3>Agent ".$userinfo['username']."</h3>"; 
-	if($userinfo['recording'])
-		echo "Mithören ist <strong>aktiviert</strong> für Nummer ".$userinfo['number'].".";
-	else
-		echo "Mithören ist <strong>nicht aktiviert</strong>.";
-	echo "<br/>";
-	   
-    echo $this->Html->link("aktivieren", array('controller' => 'recording', 'action' => 'enable', $userinfo['user_number']));
-    echo " | ";
-    echo $this->Html->link("deaktivieren", array('controller' => 'recording', 'action' => 'disable', $userinfo['user_number']));
-}
-?>
+        <div class="ym-g50 ym-gr">
+            <div class="ym-gbox-right">
+            <?php 
+                if (isset($userinfo))
+                { 
+                    echo "<h3>Agent ".$userinfo['username']."</h3>"; 
+                    if($userinfo['recording'])
+                        echo "<p>Mithören ist <strong>aktiviert</strong> für Supervisor <strong>".$userinfo['number']."</strong>.</p>";
+                    else
+                        echo "<p>Mithören ist <strong>nicht aktiviert</strong>.</p>";
+                    echo "<br/>";
+                }
+                else
+                {
+                    echo "<p>Bitte füllen Sie das Formular vollständig aus.</p>";
+                }
+            ?>
+            </div>
+        </div>
+    </div>
 </div>
