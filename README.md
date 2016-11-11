@@ -1,36 +1,37 @@
-# CakePHP Application PBX-Recording
-
-The framework source code can be found here: [cakephp/cakephp](https://github.com/cakephp/cakephp).
+# PbxManager plugin for CakePHP
 
 ## Installation
 
-1. Download [Composer](http://getcomposer.org/doc/00-intro.md) or update
-
-	```bash
-	composer self-update
-	```
-2. Clone Repository
-
-	```bash
-	git clone https://github.com/charluemm/pbx-recording.git
-	```
-3. Run `php composer.phar install`.
-
-	If Composer is installed globally, run
-
-	```bash
-	composer install
-	```
-
-
-### enable PbxManager plugin
-
 1. Clone [Repository] into ```plugins/``` folder (or copy ```plugins/PbXManager``` folder)
+
+	```bash
+	clone https://github.com/charluemm/pbx-recording.git
+	```
 2. enable ```PbxManager``` plugin
 
 	```php
 	// config/bootstrap.php
 	Plugin::load('PbxManager', ['bootstrap' => false, 'routes' => true, 'autoload' => true]);
+	```
+3. Create new config-file to override default config.
+
+
+	```php
+	// config/soap_config.php
+	<?php
+	$config = array(
+		"proxy" => array(
+	        "host" => null,
+	        "port" => null,
+			"login" => null,
+			"password" => null
+	    ),
+		"soap" => array(
+			"url" => null,
+			"login" => null,
+			"password" => null
+		)
+	);
 	```
 
 [Repository]: https://github.com/charluemm/pbx-recording.git
