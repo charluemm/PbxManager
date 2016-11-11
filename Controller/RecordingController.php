@@ -5,7 +5,7 @@
 */
 class RecordingController extends AppController
 {
-	public $components = array("Soap");
+	public $components = array("PbxManager.Soap");
 
 	/**
 	 * creates new log entry
