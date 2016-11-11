@@ -36,27 +36,27 @@ class InnoPbx extends \SoapClient {
 	 */
 	public function __construct($server, $soapUser,	$soapPasswd, $user = null, $options = null,	$wsdl = null)
 	{
-		$wsdl = ($wsdl === null) ? self::_wsdl : $wsdl;
+		$wsdl = (empty($wsdl)) ? self::_wsdl : $wsdl;
 
 		$usedoptions = array(
 				'login' => $soapUser,
 				'password' => $soapPasswd,
-				'location' => "http://$server/PBX0/user.soap"
+				'location' => "$server/PBX0/user.soap"
 		);
 
 		if (is_array($options))
 			$usedoptions += $options;
 
-			// merge in user options
-			$usedoptions += $this->___options;	// merged in class global options
+		// merge in user options
+		$usedoptions += $this->_options;	// merged in class global options
 
-			// construct parent class
-			parent::__construct($wsdl, $usedoptions);
+		// construct parent class
+		parent::__construct($wsdl, $usedoptions);
 
-			// get the connection (using and activating v9 wsdl)
-			$init = $this->Initialize($user, "Chronos SOAP Client", true, true, true, true, true);
-			$this->_key = $init['key'];
-			$this->_session = $init['return'];
+		// get the connection (using and activating v9 wsdl)
+		$init = $this->Initialize($user, "Chronos SOAP Client", true, true, true, true, true);
+		$this->_key = $init['key'];
+		$this->_session = $init['return'];
 	}
 
 	/**
