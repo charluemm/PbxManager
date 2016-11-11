@@ -2,7 +2,7 @@
 
 ## Installation
 
-1. Clone [Repository] into ```plugins/``` folder (or copy ```plugins/PbXManager``` folder)
+1. Clone [Repository] into ```plugins/``` folder 
 
 	```bash
 	clone https://github.com/charluemm/pbx-recording.git
@@ -20,18 +20,19 @@
 	// config/soap_config.php
 	<?php
 	$config = array(
-		"proxy" => array(
-	        "host" => null,
-	        "port" => null,
-			"login" => null,
-			"password" => null
-	    ),
-		"soap" => array(
-			"url" => null,
-			"login" => null,
-			"password" => null
-		)
-	);
+    "proxy" => array(
+        "host" => null,
+        "port" => null,
+        "login" => null,
+        "password" => null
+    ),
+    "soap" => array(
+        "wsdl" => null,
+        "server" => null,
+        "login" => null,
+        "password" => null
+    )
+    );
 	```
 
 [Repository]: https://github.com/charluemm/pbx-recording.git
