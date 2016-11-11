@@ -8,7 +8,8 @@ $config = array(
 		"password" => null
     ),
 	"soap" => array(
-		"url" => null,
+		"wsdl" => null,
+		"server" => null,
 		"login" => null,
 		"password" => null
 	)
