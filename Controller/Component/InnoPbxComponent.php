@@ -1,7 +1,7 @@
 <?php
 App::uses('Component','Controller');
-App::uses('Array2Xml', 'Lib');
-App::uses('InnoPbx', 'Lib');
+App::uses('Array2Xml', 'PbxManager.Lib');
+App::uses('InnoPbx', 'PbxManager.Lib');
 
 /**
  * Class to handle PBX SOAP calls
@@ -13,9 +13,17 @@ class InnoPbxComponent extends Component {
 
 	protected $inno;
 	
-	public function __construct($config)
+	public function __construct(ComponentCollection $collection, $settings = array())
 	{
-		Configure::load("soap_config");
+		try
+		{
+			Configure::load("soap_config");
+		}
+		catch (Exception $ex)
+		{
+			Configure::load("PbxManager.soap_config");
+		}
+		
 		$wsdl = Configure::read("soap.wsdl");
 		
 		$options = array(
@@ -34,9 +42,9 @@ class InnoPbxComponent extends Component {
 		
 		$server = Configure::read("soap.server");
 		$soapUser = Configure::read("soap.login");
-		$soapPasswd = Configure::read("soap.login");
+		$soapPasswd = Configure::read("soap.password");
 		
-		$cn = (array_key_exists("cn", $config)) ? $config['cn'] : null;
+		$cn = (array_key_exists("cn", $settings)) ? $settings['cn'] : null;
 		
 		$this->inno = new InnoPbx($server, $soapUser, $soapPasswd, $cn, $options, $wsdl); 
 		if ($this->inno->getKey() == 0) 
