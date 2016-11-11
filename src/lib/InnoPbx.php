@@ -79,3 +79,122 @@ class InnoPbx extends \SoapClient {
 		return $this->_session;
 	}
 }
+
+class InnoUserInfo {
+	/** @var boolean */
+	protected $active;
+	/** @var string */
+	protected $state;
+	/** @var string */
+	protected $channel;
+	/** @var string */
+	protected $alert;
+	/** @var string */
+	protected $type;
+	/** @var string */
+	protected $guid;
+	/** @var string */
+	protected $cn;
+	/** @var string */
+	protected $e164;
+	/** @var string */
+	protected $h323;
+	/** @var string */
+	protected $dn;
+	/** @var string */
+	protected $domain;
+	/** @var boolean */
+	protected $h323email;
+	/** @var string */
+	protected $email = array();
+	/** @var array of InnoGroups records */
+	protected $groups = array();
+	/** @var array of InnoPresence records */
+	protected $presence = array();
+	/** @var boolean */
+	protected $cfg;
+	/** @var string */
+	protected $object;
+	/** @var string */
+	protected $loc;
+	/** @var string */
+	protected $node;
+	/** @var string */
+	protected $nodenum;
+	/** @var array of InnoInfo **/
+	protected $info;
+}
+
+class InnoGroup
+{
+	/** @var string */
+	protected $group;
+	/** @var boolean */
+	protected $active;
+}
+
+class InnoPresence
+{
+	/** @var string */
+	protected $status;
+	/** @var string */
+	protected $activity;
+	/** @var string */
+	protected $note;
+}
+
+class InnoCallInfo
+{
+	/** @var int **/
+	protected $user;
+	/** @var int **/
+	protected $call;
+	/** @var int **/
+	protected $reg;
+	/** @var boolean */
+	protected $active;
+	/** @var int **/
+	protected $state;
+	/** @var string */
+	protected $msg;
+	/** @var array of InnoNo */
+	protected $no = array();
+	/** @var array of InnoInfo */
+	protected $info;
+}
+
+class InnoNo
+{
+	/** @var string */
+	protected $type;
+	/** @var string */
+	protected $cn;
+	/** @var string */
+	protected $e164;
+	/** @var string */
+	protected $h323;
+	/** @var string */
+	protected $dn;
+}
+
+class InnoInfo
+{
+	/** @var string */
+	protected $type;
+	/** @var string */
+	protected $vals;
+	/** @var int */
+	protected $vali;
+}
+
+class InnoAnyInfo
+{
+	/** @var array of InnoUserInfo */
+	protected $user = array();
+	/** @var array of InnoCallInfo */
+	protected $call = array();
+	
+	protected $reg;
+	
+	protected $info;
+}
