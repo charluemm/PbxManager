@@ -16,8 +16,16 @@ class SoapComponent extends Component {
 	private $soapClient;
 	
 	public function __construct($config)
-	{		
-		Configure::load("soap_config");
+	{	
+		try 
+		{
+			Configure::load("soap_config");
+		} 
+		catch (Exception $ex)
+		{
+			Configure::load("PbxManager.soap_config");
+		}
+		
 		$url = Configure::read("soap.wsdl");
 		
 		$options = array(
