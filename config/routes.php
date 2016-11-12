@@ -12,3 +12,8 @@ Router::connect('/pbx-manager',array(
 		'controller' => 'Recording',
 		'action' => 'index'
 ));
+Router::connect('/pbx-manager/admin',array(
+		'plugin' => 'PbxManager',
+		'controller' => 'Admin',
+		'action' => 'index'
+));
