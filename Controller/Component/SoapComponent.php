@@ -1,7 +1,7 @@
 <?php
 
 App::uses('Component','Controller');
-App::uses('Array2Xml', 'Lib');
+App::uses('Array2XML', 'PbxManager.Lib');
 
 /**
  * Class to handle SOAP calls
@@ -86,6 +86,35 @@ class SoapComponent extends Component {
 	}
 	
 	/**
+	 * get ACTIVE groups with given name prefix
+	 * 
+	 * @param string $grpPrefix groups name prefix
+	 * @throws \Exception
+	 */
+	public function getUserGroups($userConf, $grpPrefix = "")
+	{
+		if(empty($this->soapClient))
+		{
+			throw new \Exception("SoapClient is not configured. Check SOAP parameters in soap_config.php");
+		}
+		
+		if(!($userConf instanceof SimpleXMLElement ))
+			$userConf = new \SimpleXMLElement($userConf);
+		
+		// get all active groups starting with prefix
+		$groupsConf = $userConf->user->xpath("grp[@mode='active'][starts-with(@name, '$grpPrefix')]");
+		
+		$groups = array();
+		foreach ($groupsConf as $group)
+		{
+			$name = $group->attributes()['name']->asXML();
+			$groups[] = $name;
+		}
+		
+		return $groups;
+	}
+	
+	/**
 	 * get recording status from user
 	 *
 	 * @param string $number the agent phone
@@ -142,15 +171,25 @@ class SoapComponent extends Component {
 		
 		try
 		{
-			$userConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
+			$agentConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
+			$supervisorConf = new \SimpleXMLElement($this->findUserConfig(null, null, $supervisor));
 		}
 		catch(Exception $ex)
 		{
 			throw new \Exception($ex->getMessage());
 		}
-				
+		
+		// check groups
+		$agentGroups = $this->getUserGroups($agentConf, "TEST_");
+		$supervisorGroups = $this->getUserGroups($supervisorConf, "TEST_");
+		
+		if(array_diff($agentGroups, $supervisorGroups) == $agentGroups)
+		{
+			throw new \Exception("Berechtigungsfehler für Supervisor $supervisor auf Agent $number");
+		}
+		
 		// set recording settings
-		$recConf = $this->setRecordingConf($userConf, true, $supervisor);
+		$recConf = $this->setRecordingConf($agentConf, true, $supervisor);
 		$result = $this->soapClient->Admin($recConf);
 		
 		// check result
@@ -223,7 +262,7 @@ class SoapComponent extends Component {
 		
 		// convert to array
 		$arrayConf = json_decode(json_encode(simplexml_load_string($xmlConf->asXML())),true);
-		$xml = Array2Xml::createXML("modify", $arrayConf);
+		$xml = Array2XML::createXML("modify", $arrayConf);
 		return $xml->saveXML();
 	}
 	
