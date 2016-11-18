@@ -32,12 +32,12 @@ class InnoPbxComponent extends Component {
 			'proxy_login' => Configure::read("proxy.login"),
 			'proxy_password' => Configure::read("proxy.password"),
 			'classmap' => array(
-				"UserInfo" => "InnoUserInfo",
-				"CallInfo" => "InnoCallInfo",
-				"AnyInfo" => "InnoAnyInfo",
-				"Group" => "InnoGroup",
-				"No" => "InnoNo",
-				"Info" => "InnoInfo")
+				"UserInfo"	=> "InnoUserInfo",
+				"CallInfo" 	=> "InnoCallInfo",
+				"AnyInfo"	=> "InnoAnyInfo",
+				"Group" 	=> "InnoGroup",
+				"No"		=> "InnoNo",
+				"Info" 		=> "InnoInfo")
 		);
 		
 		$server = Configure::read("soap.server");
@@ -48,7 +48,12 @@ class InnoPbxComponent extends Component {
 		
 		$this->inno = new InnoPbx($server, $soapUser, $soapPasswd, $cn, $options, $wsdl); 
 		if ($this->inno->getKey() == 0) 
-			die("failed to login to PBX");
+			die("failed to login to PBX. session could not be initialized.");
+	}
+	
+	public function poll()
+	{
+		return $this->inno->Poll($this->inno->getSession());
 	}
 	
 	public function setRecordingConf($cn, $number, $enable)

@@ -5,7 +5,7 @@
 */
 class RecordingController extends AppController
 {
-	public $components = array("PbxManager.Soap", "PbxManager.InnoPbx" => array('cn' => ''));
+	public $components = array("PbxManager.Soap");//, "PbxManager.InnoPbx" => array('cn' => 'Carsten.Homeoffice'));
 
 	/**
 	 * creates new log entry
@@ -21,7 +21,7 @@ class RecordingController extends AppController
 		{
 			$supervisor = trim($this->request->data['select']['supervisorPhone']);
 			$agent = trim($this->request->data['select']['agentPhone']);
-				
+			
 			// check attributes
 			if((empty($supervisor) || empty($agent)) || (!is_numeric($supervisor) || !is_numeric($agent)))
 			{
@@ -33,29 +33,44 @@ class RecordingController extends AppController
 			// enable
 			if(isset($this->request->data['enable']))
 			{
-				$result = $this->Soap->enableRecording($agent, $supervisor);
-				if($result)
+				try 
 				{
-					$this->logWrite("Recording wurde auf Agent $agent für Supervisor $supervisor aktiviert");
-					$this->Session->setFlash(__('Mithören wurde aktiviert.'), 'default', array(), 'good');
+					$result = $this->Soap->enableRecording($agent, $supervisor);
+					
+					if($result)
+					{
+						$this->logWrite("Recording wurde auf Agent $agent für Supervisor $supervisor aktiviert");
+						$this->Session->setFlash(__('Mithören wurde aktiviert.'), 'default', array(), 'good');
+					}
+					else
+					{
+						$this->Session->setFlash(__('Es ist ein Fehler aufgetreten! Mithören konnte nicht aktiviert werden.'), 'default', array(), 'bad');
+					}
 				}
-				else
+				catch (Exception $ex)
 				{
-					$this->Session->setFlash(__('Es ist ein Fehler aufgetreten! Mithören konnte nicht aktiviert werden.'), 'default', array(), 'bad');
+					$this->Session->setFlash(__('Es ist ein Fehler aufgetreten: '.$ex->getMessage()), 'default', array(), 'bad');
 				}
 			}
 			// disable
 			elseif(isset($this->request->data['disable']))
 			{
-				$result = $this->Soap->disableRecording($agent, $supervisor);
-				if($result)
+				try 
 				{
-					$this->logWrite("Recording wurde auf Agent $agent für Supervisor $supervisor deaktiviert");
-					$this->Session->setFlash(__('Mithören wurde deaktiviert.'), 'default', array(), 'good');
-				}
-				else
+					$result = $this->Soap->disableRecording($agent, $supervisor);
+					if($result)
+					{
+						$this->logWrite("Recording wurde auf Agent $agent für Supervisor $supervisor deaktiviert");
+						$this->Session->setFlash(__('Mithören wurde deaktiviert.'), 'default', array(), 'good');
+					}
+					else
+					{
+						$this->Session->setFlash(__('Es ist ein Fehler aufgetreten! Mithören konnte nicht deaktiviert werden.'), 'default', array(), 'bad');
+					}
+				} 
+				catch (Exception $ex) 
 				{
-					$this->Session->setFlash(__('Es ist ein Fehler aufgetreten! Mithören konnte nicht deaktiviert werden.'), 'default', array(), 'bad');
+					$this->Session->setFlash(__('Es ist ein Fehler aufgetreten: '.$ex->getMessage()), 'default', array(), 'bad');
 				}
 			}
 				
