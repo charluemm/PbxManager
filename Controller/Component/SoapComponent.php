@@ -1,11 +1,11 @@
 <?php
 
 App::uses('Component','Controller');
-App::uses('Array2XML', 'PbxManager.Lib');
+App::uses('Array2Xml', 'Lib');
 
 /**
  * Class to handle SOAP calls
- * 
+ *
  * @author Michael Müller <development@reu-network.de>
  * @author David Howon <howon.david@gmail.com>
  *
@@ -15,17 +15,11 @@ class SoapComponent extends Component {
 	/** @var \SoapClient */
 	private $soapClient;
 	
+	private static $GROUP_PREFIX = "CC";
+	
 	public function __construct($config)
-	{	
-		try 
-		{
-			Configure::load("soap_config");
-		} 
-		catch (Exception $ex)
-		{
-			Configure::load("PbxManager.soap_config");
-		}
-		
+	{
+		Configure::load("soap_config");
 		$url = Configure::read("soap.wsdl");
 		
 		$options = array(
@@ -35,19 +29,19 @@ class SoapComponent extends Component {
 				'proxy_port' => Configure::read("proxy.port"),
 				'proxy_login' => Configure::read("proxy.login"),
 				'proxy_password' => Configure::read("proxy.password"),
-				//'trace' => 1, 
+				//'trace' => 1,
 				//'exceptions' => 1,
 				'connection_timeout' => 10,
 				'request_fulluri' => true,
 				'stream_context' => stream_context_create(array(
-										'http' => array(
-											'protocol_version' => 1.0, 
-										),
-										'ssl' => array(
-											'verify_peer' => false,
-											'verify_peer_name' => false,
-											'allow_self_signed' => false
-										)
+						'http' => array(
+								'protocol_version' => 1.0,
+						),
+						'ssl' => array(
+								'verify_peer' => false,
+								'verify_peer_name' => false,
+								'allow_self_signed' => false
+						)
 				))
 		);
 		
@@ -56,10 +50,11 @@ class SoapComponent extends Component {
 	}
 	
 	/**
-	 * 
+	 *
 	 * @param string $cn
 	 * @param string $h323
 	 * @param string $e165
+	 * @throws \Exception if soap client is not configured
 	 * @return UserInfoArray
 	 */
 	public function findUserConfig($cn = null, $h323 = null, $e165 = null)
@@ -86,12 +81,12 @@ class SoapComponent extends Component {
 	}
 	
 	/**
-	 * get ACTIVE groups with given name prefix
-	 * 
+	 * get groups with given name prefix
+	 *
 	 * @param string $grpPrefix groups name prefix
 	 * @throws \Exception
 	 */
-	public function getUserGroups($userConf, $grpPrefix = "")
+	public function getUserGroups($userConf)
 	{
 		if(empty($this->soapClient))
 		{
@@ -100,24 +95,27 @@ class SoapComponent extends Component {
 		
 		if(!($userConf instanceof SimpleXMLElement ))
 			$userConf = new \SimpleXMLElement($userConf);
-		
-		// get all active groups starting with prefix
-		$groupsConf = $userConf->user->xpath("grp[@mode='active'][starts-with(@name, '$grpPrefix')]");
-		
-		$groups = array();
-		foreach ($groupsConf as $group)
-		{
-			$name = $group->attributes()['name']->asXML();
-			$groups[] = $name;
-		}
-		
-		return $groups;
+			
+			// get all active groups starting with prefix
+			$prefix = self::$GROUP_PREFIX;
+			//$groupsConf = $userConf->user->xpath("grp[starts-with(@name, '$prefix')]");
+			$groupsConf = $userConf->user->xpath("grp");
+			
+			$groups = array();
+			foreach ($groupsConf as $group)
+			{
+				$name = $group->attributes()['name']->asXML();
+				$groups[] = $name;
+			}
+			
+			return $groups;
 	}
 	
 	/**
 	 * get recording status from user
 	 *
 	 * @param string $number the agent phone
+	 * @throws \Exception if soap client is not configured
 	 * @return array $userinfo array of user parameters
 	 */
 	public function getRecordingStatus($number)
@@ -142,7 +140,7 @@ class SoapComponent extends Component {
 		$return['user_number'] = $number;
 		$return['username'] = (string)$userConf->user['cn'];
 		$return['number'] = (string)$recConf['e164'];
-
+		
 		// set return attributes
 		$mode  = (string) $recConf['mode'];
 		$twoWayMedia = (string)$recConf['recv'];
@@ -150,7 +148,7 @@ class SoapComponent extends Component {
 		$autoconnect = (string)$recConf['ac'];
 		
 		$return['recording'] = ($mode === "transparent" && $twoWayMedia === "0" && $autoconnect === "1" && $funcKeyControl === "1");
-				
+		
 		return $return;
 	}
 	
@@ -180,8 +178,8 @@ class SoapComponent extends Component {
 		}
 		
 		// check groups
-		$agentGroups = $this->getUserGroups($agentConf, "TEST_");
-		$supervisorGroups = $this->getUserGroups($supervisorConf, "TEST_");
+		$agentGroups = $this->getUserGroups($agentConf);
+		$supervisorGroups = $this->getUserGroups($supervisorConf);
 		
 		if(array_diff($agentGroups, $supervisorGroups) == $agentGroups)
 		{
@@ -195,19 +193,20 @@ class SoapComponent extends Component {
 		// check result
 		if(trim($result) == "<ok/>")
 			return true;
-		else
-		{
-			return false;
-		}
+			else
+			{
+				return false;
+			}
+			
 	}
 	
 	/**
-	 * disable pbx recording 
-	 * 
+	 * disable pbx recording
+	 *
 	 * @param int $number agent phone
 	 * @param int $supervisor supervisor phone
 	 * @throws \Exception if soap client is not configured
-	 * @return boolean true, if sucessfull
+	 * @return boolean true, if successful
 	 */
 	public function disableRecording($number, $supervisor)
 	{
@@ -218,67 +217,78 @@ class SoapComponent extends Component {
 		
 		try
 		{
-			$userConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
+			$agentConf = new \SimpleXMLElement($this->findUserConfig(null, null, $number));
+			$supervisorConf = new \SimpleXMLElement($this->findUserConfig(null, null, $supervisor));
 		}
 		catch(Exception $ex)
 		{
 			throw new \Exception($ex->getMessage());
 		}
 		
+		// check groups
+		$agentGroups = $this->getUserGroups($agentConf);
+		$supervisorGroups = $this->getUserGroups($supervisorConf);
+		
+		if(array_diff($agentGroups, $supervisorGroups) == $agentGroups)
+		{
+			throw new \Exception("Berechtigungsfehler für Supervisor $supervisor auf Agent $number");
+		}
+		
 		// set recording settings
-		$recConf = $this->setRecordingConf($userConf, false);
+		$recConf = $this->setRecordingConf($agentConf, false, $supervisor);
 		$result = $this->soapClient->Admin($recConf);
 		
 		// check result
 		if(trim($result) == "<ok/>")
 			return true;
-		else
-			return false;
+			else
+			{
+				return false;
+			}
 	}
 	
 	/**
 	 * create recording conf xml
-	 *  
+	 *
 	 * @param UserInfo $xmlConf agents userconfig
 	 * @param boolean $enable enable or disable
 	 * @param int $number supervisor phone number
 	 */
 	private function setRecordingConf($xmlConf, $enable, $number = null)
 	{
-		// check if rec attribute exists
-		if(!isset($xmlConf->user->phone->rec))
+		// check if phone attribute exists
+		if(!isset($xmlConf->user->phone))
 		{
-			$cn = $xmlConf->user['cn'];
-			return $this->addRecordingConf($cn, $number);
+			$recConf = $xmlConf->user->addChild('phone')->addChild('rec');
+			$recConf->addAttribute("mode", $enable ? "transparent" : "off");
+			$recConf->addAttribute("recv", 0);
+			$recConf->addAttribute("fkey", 1);
+			$recConf->addAttribute("ac", $enable ? 1 : 0);
+			$recConf->addAttribute("e164", $enable ? $number : null);
+		}// check if rec attribute exists
+		elseif(!isset($xmlConf->user->phone->rec))
+		{
+			$recConf = $xmlConf->user->phone->addChild('rec');
+			$recConf->addAttribute("mode", $enable ? "transparent" : "off");
+			$recConf->addAttribute("recv", 0);
+			$recConf->addAttribute("fkey", 1);
+			$recConf->addAttribute("ac", $enable ? 1 : 0);
+			$recConf->addAttribute("e164", $enable ? $number : null);
 		}
-				
-		/** @var $recConf \SimpleXMLElement */
-		$recConf = $xmlConf->user->phone->rec;
-		$recConf['mode'] = $enable ? "transparent" : "off";
-		$recConf['recv'] = 0;
-		$recConf['fkey'] = 1;
-		$recConf['ac'] = $enable ? 1 : 0;
-		$recConf['e164'] = $enable ? $number : null;
+		else
+		{
+			/** @var $recConf \SimpleXMLElement */
+			$recConf = $xmlConf->user->phone->rec;
+			$recConf['mode'] = $enable ? "transparent" : "off";
+			$recConf['recv'] = 0;
+			$recConf['fkey'] = 1;
+			$recConf['ac'] = $enable ? 1 : 0;
+			$recConf['e164'] = $enable ? $number : null;
+		}
 		
 		// convert to array
 		$arrayConf = json_decode(json_encode(simplexml_load_string($xmlConf->asXML())),true);
-		$xml = Array2XML::createXML("modify", $arrayConf);
+		$xml = Array2Xml::createXML("modify", $arrayConf);
 		return $xml->saveXML();
-	}
-	
-	private function addRecordingConf($cn, $number)
-	{
-		$result = new \SimpleXMLElement("<add-attrib />");
-		$user = $result->addChild("user");
-		$user->addAttribute("cn", $cn);
-		$phone = $user->addChild("phone");
-		$rec = $phone->addChild("rec");
-		$rec->addAttribute("mode", "transparent");
-		$rec->addAttribute("recv", 0);
-		$rec->addAttribute("fkey", 1);
-		$rec->addAttribute("ac", 1);
-		$rec->addAttribute("e164", $number);
-	
-		return $result->asXML();
 	}
 }
